@@ -1,14 +1,47 @@
 import { View, Text, TextInput, StyleSheet, Button } from 'react-native'
 import React from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from 'expo-router';
 
 const add_task = () => {
+    const navigate = useNavigation();
 
     const [title, setTitle] = React.useState('');
     const [text, setText] = React.useState('');
 
-    const addTask = () => {
-        return
-    }
+    const addTask = async () => {
+        try {
+
+            if (title.length == 0 || text.length == 0) {
+                return
+            }
+
+            // Get existing tasks from AsyncStorage
+            const jsonValue = await AsyncStorage.getItem('tasks');
+            const oldTasks = jsonValue != null ? JSON.parse(jsonValue) : [];
+
+
+            // Create the new task
+            const newTask = {
+                id: oldTasks.length + 1,
+                title: title,
+                description: text,
+                completed: false,
+            };
+
+            // Add new task to the list and save it back
+            const updatedTasks = [...oldTasks, newTask];
+            await AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks));
+
+            console.log('New task added:', newTask);
+
+            // Navigate back to the main page
+            navigate.replace('index');
+        } catch (e) {
+            console.error('Error saving task:', e);
+        }
+    };
+
 
     return (
         <View style={styles.container}>

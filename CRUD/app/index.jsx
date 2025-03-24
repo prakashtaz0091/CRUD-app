@@ -2,23 +2,33 @@ import { Stack, Link } from "expo-router";
 import { Text, View, Pressable, SafeAreaView, Platform, ScrollView, StyleSheet, FlatList, Button } from "react-native";
 import React from "react";
 import Animated, { LinearTransition } from 'react-native-reanimated'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Index() {
 
   const Container = Platform.OS === 'web' ? ScrollView : SafeAreaView
 
-  const [tasks, setTasks] = React.useState([
-    { id: 1, title: 'Task 1', description: 'Description 1', completed: true },
-    { id: 2, title: 'Task 2', description: 'Description 2', completed: false },
-    { id: 3, title: 'Task 3', description: 'Description 3', completed: true },
-  ])
+  const [tasks, setTasks] = React.useState([])
 
-  const [completedTasks, setCompletedTasks] = React.useState(tasks.filter((item) => item.completed).length)
-  const [pendingTasks, setPendingTasks] = React.useState(tasks.filter((item) => !item.completed).length)
+  const [completedTasks, setCompletedTasks] = React.useState(0)
+  const [pendingTasks, setPendingTasks] = React.useState(0)
 
-  const deleteTask = (taskId) => {
-    setTasks(tasks.filter((task) => task.id !== taskId))
-  }
+  const deleteTask = async (taskId) => {
+    try {
+      // Filter out the task to delete
+      const updatedTasks = tasks.length === 0 ? [] : tasks.filter((task) => task.id !== taskId);
+
+      // Update the state
+      setTasks(updatedTasks);
+
+      // Save the updated list to AsyncStorage
+      await AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks));
+
+    } catch (e) {
+      console.error('Error deleting task:', e);
+    }
+  };
+
 
 
   const list_header = <View>
@@ -26,11 +36,36 @@ export default function Index() {
     <View style={styles.line}></View>
   </View>
 
+  React.useEffect(() => {
+    const getData = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem('tasks');
+        const tasks = jsonValue != null ? JSON.parse(jsonValue) : [];
+        setTasks(tasks);
+      } catch (e) {
+        console.error('Error reading tasks:', e);
+        setTasks([]);
+      }
+    };
+
+    getData();
+  }, []);
+
+
 
   React.useEffect(() => {
-    setCompletedTasks(tasks.filter((item) => item.completed).length)
-    setPendingTasks(tasks.filter((item) => !item.completed).length)
-  }, [tasks])
+    setCompletedTasks(
+      tasks && Array.isArray(tasks)
+        ? tasks.filter((item) => item.completed).length
+        : 0
+    );
+    setPendingTasks(
+      tasks && Array.isArray(tasks)
+        ? tasks.filter((item) => !item.completed).length
+        : 0
+    );
+  }, [tasks]);
+
 
   return (
     <Container style={styles.container}>
@@ -38,7 +73,7 @@ export default function Index() {
         <View style={styles.statusBox} >
           <View style={styles.statusContent}>
             <Text style={styles.statusTitle} >Total Tasks</Text>
-            <Text style={styles.statusCount} >{tasks.length}</Text>
+            <Text style={styles.statusCount} >{tasks.length || 0}</Text>
           </View>
           <View style={styles.verticalLine}></View>
           <View style={styles.statusContent}>
@@ -166,7 +201,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     position: 'absolute',
     top: 5,
-    right: 10
+    right: -20
   },
   taskItemDescription: {
     fontSize: 12,
