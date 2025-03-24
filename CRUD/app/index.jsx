@@ -1,5 +1,5 @@
-import { Stack } from "expo-router";
-import { Text, View, Pressable, Link, SafeAreaView, Platform, ScrollView, StyleSheet, FlatList, Button } from "react-native";
+import { Stack, Link } from "expo-router";
+import { Text, View, Pressable, SafeAreaView, Platform, ScrollView, StyleSheet, FlatList, Button } from "react-native";
 import React from "react";
 
 export default function Index() {
@@ -75,7 +75,11 @@ export default function Index() {
         )}
         style={styles.taskList}
       />
-      <Button title="Create New Task" />
+      <Link href="/add_task" asChild>
+        <Pressable style={styles.addTaskButton}>
+          <Text style={styles.addTaskButtonText} >Add Task</Text>
+        </Pressable>
+      </Link>
 
     </Container >
 
@@ -170,5 +174,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     padding: 5,
     borderRadius: 5
+  },
+  addTaskButton: {
+    backgroundColor: 'blue',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    color: 'white',
+  },
+  addTaskButtonText: {
+    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 18
   }
+
 })
