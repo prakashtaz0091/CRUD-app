@@ -1,6 +1,7 @@
 import { Stack, Link } from "expo-router";
 import { Text, View, Pressable, SafeAreaView, Platform, ScrollView, StyleSheet, FlatList, Button } from "react-native";
 import React from "react";
+import Animated, { LinearTransition } from 'react-native-reanimated'
 
 export default function Index() {
 
@@ -53,7 +54,7 @@ export default function Index() {
 
         </View>
       </View>
-      <FlatList
+      <Animated.FlatList
         data={tasks}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={list_header}
@@ -74,6 +75,7 @@ export default function Index() {
           </View>
         )}
         style={styles.taskList}
+        itemLayoutAnimation={LinearTransition}
       />
       <Link href="/add_task" asChild>
         <Pressable style={styles.addTaskButton}>
